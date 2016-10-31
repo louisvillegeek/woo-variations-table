@@ -1,6 +1,6 @@
   <?php
 /*
-Plugin Name: WooCommerce Variations table
+Plugin Name: Woo Variations table
 Plugin URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Description: Show WooCommerce variable products variations as table with filters and sorting instead of normal dropdowns.
 Author: Alaa Rihan
@@ -13,7 +13,7 @@ Version: 1.0
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-define("WOOCOMMERCE_VARIATIONS_TABLE_VERSION", 1.0);
+define("WOO_VARIATIONS_TABLE_VERSION", 1.0);
 
 // Remove default variable product add to cart
 add_action( 'plugins_loaded', 'remove_variable_product_add_to_cart' );
@@ -25,11 +25,11 @@ add_action( 'wp_enqueue_scripts', 'variations_table_scripts' );
 function variations_table_scripts() {
 	if(is_product()){
 		wp_enqueue_script( 'vuejs', plugins_url( 'js/vue.min.js', __FILE__ ), '', '2.0.3', false );
-		wp_enqueue_script( 'woocommerce-variations-table-script', plugins_url( 'js/woocommerce-variations-table.js', __FILE__), 'vuejs', WOOCOMMERCE_VARIATIONS_TABLE_VERSION, false );
-		wp_localize_script( 'woocommerce-variations-table-script', 'localData', array(
+		wp_enqueue_script( 'woo-variations-table-script', plugins_url( 'js/woo-variations-table.js', __FILE__), 'vuejs', WOO_VARIATIONS_TABLE_VERSION, false );
+		wp_localize_script( 'woo-variations-table-script', 'localData', array(
 			'ajaxURL' => admin_url( 'admin-ajax.php' ),
 		) );
-		wp_enqueue_style( 'woocommerce-variations-table-style', plugins_url( 'css/woocommerce-variations-table.css', __FILE__ ), '', WOOCOMMERCE_VARIATIONS_TABLE_VERSION);
+		wp_enqueue_style( 'woo-variations-table-style', plugins_url( 'css/woo-variations-table.css', __FILE__ ), '', WOO_VARIATIONS_TABLE_VERSION);
 	}
 }
 

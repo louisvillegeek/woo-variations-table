@@ -1,4 +1,4 @@
-=== WooCommerce Variations Table ===
+=== Woo Variations Table ===
 Contributors: alaa-rihan
 Tags: woocommerce, variations, table
 Requires at least: 4.0
@@ -11,7 +11,7 @@ Show WooCommerce variable products variations as table with filters and sorting 
 
 == Description ==
 
-WooCommerce Variations Table Replace normal WooCommerce variations dropdowns by professional table with filters by attributes and keywords.
+Woo Variations Table Replace normal WooCommerce variations dropdowns by professional table with filters by attributes and keywords.
 
 This plugin doesn't offer any options at this moment but I will add options to let you control what to show in the table and sort the columns soon.
 
