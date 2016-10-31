@@ -7,13 +7,34 @@ Author: Alaa Rihan
 Author URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Text Domain: woo-variations-table
 Domain Path: /lang/
-Version: 1.0
+Version: 0.8
 */
 
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-define("WOO_VARIATIONS_TABLE_VERSION", 1.0);
+
+define("WOO_VARIATIONS_TABLE_VERSION", 0.8);
+
+// Check if WooCommerce is enabled
+add_action('plugins_loaded', 'check_woocommerce_enabled', 1);
+function check_woocommerce_enabled(){
+    if (!class_exists('WooCommerce')) {
+        add_action('admin_notices','woocommerce_disabled_notice');
+        return;
+    }
+
+}
+
+/**
+ * Display WC disabled notice
+ *
+ * @access public
+ * @return void
+ */
+function woocommerce_disabled_notice(){
+    echo '<div class="error"><p>' . sprintf(__('<strong>Woo Variations Table</strong> requires WooCommerce to be activate. You can download WooCommerce %s.', 'woo-variations-table'), '<a href="https://wordpress.org/plugins/woocommerce/">' . __('here', 'woo-variations-table') . '</a>') . '</p></div>';
+}
 
 // Remove default variable product add to cart
 add_action( 'plugins_loaded', 'remove_variable_product_add_to_cart' );
