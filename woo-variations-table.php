@@ -1,4 +1,4 @@
-  <?php
+<?php
 /*
 Plugin Name: Woo Variations table
 Plugin URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
@@ -26,14 +26,15 @@ function check_woocommerce_enabled(){
 
 }
 
-/**
- * Display WC disabled notice
- *
- * @access public
- * @return void
- */
+ // Display WC disabled notice
 function woocommerce_disabled_notice(){
-    echo '<div class="error"><p>' . sprintf(__('<strong>Woo Variations Table</strong> requires WooCommerce to be activate. You can download WooCommerce %s.', 'woo-variations-table'), '<a href="https://wordpress.org/plugins/woocommerce/">' . __('here', 'woo-variations-table') . '</a>') . '</p></div>';
+    echo '<div class="error"><p><strong>Woo Variations Table</strong> ' .sprintf( __( 'requires %sWooCommerce%s to be installed & activated!' , 'woo-variations-table' ), '<a href="http://wordpress.org/extend/plugins/woocommerce/">', '</a>' ) .'</p></div>';
+}
+
+// Add image size for product image thumbnail
+add_action( 'init', 'woo_variations_table_add_variation_thumb_image_size' );
+function woo_variations_table_add_variation_thumb_image_size() {
+    add_image_size( 'woovt-variation-thumb', 80, 80, false ); 
 }
 
 // Remove default variable product add to cart
@@ -42,6 +43,7 @@ function remove_variable_product_add_to_cart() {
   remove_action( 'woocommerce_variable_add_to_cart', 'woocommerce_variable_add_to_cart', 30 );
 }
 
+// Enqueue scripts and styles
 add_action( 'wp_enqueue_scripts', 'variations_table_scripts' );
 function variations_table_scripts() {
 	if(is_product()){
@@ -54,6 +56,7 @@ function variations_table_scripts() {
 	}
 }
 
+// Add ajax callback to add variation to cart
 add_action( 'wp_ajax_variation_add_to_cart', 'variations_table_ajax_variation_add_to_cart' );
 add_action( 'wp_ajax_nopriv_variation_add_to_cart', 'variations_table_ajax_variation_add_to_cart' );
 function variations_table_ajax_variation_add_to_cart() {
@@ -90,21 +93,25 @@ function variations_table_get_variation_data_from_variation_id( $variation_id ) 
     return $variation_data; // $variation_data will return only the data which can be used to store variation data
 }
 
-// Print Variations table after product summary
+// Print variations table after product summary
 add_filter('woocommerce_after_single_product_summary','variations_table_print_table',9);
 function variations_table_print_table(){
     global $product;
     if( $product->is_type( 'variable' ) ){
-        $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->id ), 'variation-thumb')[0];
+        $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->id ), 'woovt-variation-thumb')[0];
         $variations = json_encode($product->get_available_variations());
         $original_attributes = $product->get_variation_attributes();
         $attrs = array();
         foreach ( $original_attributes as $key => $name ) :
-            $attrs[$key]['name']= wc_attribute_label($key);
+            $correctkey = str_replace(' ', '-', strtolower($key));
+            $attrs[$correctkey]['name']= wc_attribute_label($key);
             for($i=0; count($name) > $i; $i++){
                 $term = get_term_by('slug', array_values($name)[$i], $key);
-                
+                if($term){
                 $attrs[$key]['options'][]=array('name'=>$term->name, 'slug'=>array_values($name)[$i]);
+                }else{
+                  $attrs[$correctkey]['options'][]= array('name'=>array_values($name)[$i], 'slug'=>array_values($name)[$i]);
+                }
             }
         endforeach;
         $attributes = json_encode($attrs);
@@ -130,7 +137,7 @@ function variations_table_print_table(){
                 <tbody>
                   <tr v-for="(entry, index) in filteredData" :class="'variation-'+entry.variation_id+ ' image-'+ imageClass(entry['image_link'])">
                     <td v-for="column in columns" :class="column.key">
-                      <span class="item" v-if="column.type == 'image' "><img :src="imageURL(entry[column.key])" style="width: 80px; height: auto;"></span>
+                      <span class="item" v-if="column.type == 'image'"><img v-if="imageURL(entry[column.key]) != ''" :src="imageURL(entry[column.key])"></span>
                       <span class="item" v-if="column.type == 'text' ">{{entry[column.key]}}</span>
                       <span class="item" v-if="column.type == 'html'" v-html="entry[column.key]"></span>
                     </td>
