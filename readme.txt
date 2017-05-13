@@ -2,8 +2,8 @@
 Contributors: alaa-rihan
 Tags: woocommerce, variations, table
 Requires at least: 4.0
-Tested up to: 4.7.3
-Stable tag: 1.1
+Tested up to: 4.7.4
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
