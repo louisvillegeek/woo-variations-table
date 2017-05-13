@@ -26,6 +26,11 @@ After downloading the ZIP file,
 
 == Changelog ==
 
+= 1.2 =
+* Add new option to show attributes values as columns in the table.
+* Fix Table wasn't working in Internet Explorer.
+* Show weight unit in the variations table.
+
 = 1.1 =
 * Support multilangual and include PO file.
 
