@@ -210,6 +210,7 @@ function variations_table_print_table(){
           if(!isset($variation['stock']) && isset($variation['stock_quantity'])){
             $variations[$key]['stock'] = $variation['stock_quantity'];
           }
+          
           // price_html is empty if all variations have the same price in WooCommerce 3.x so do this work around
           if(empty($variation['price_html'])){
             $variations[$key]['price_html'] = $product->get_price_html();
@@ -221,8 +222,7 @@ function variations_table_print_table(){
         $variation_attributes = $product->get_variation_attributes();
         $attrs = array();
         foreach ( $variation_attributes as $key => $name ) {
-            $correctkey = str_replace(' ', '-', strtolower($key));
-            $correctkey = preg_replace('/[^A-Za-z0-9\-\_]/', '', $correctkey);
+            $correctkey = wc_sanitize_taxonomy_name( stripslashes( $key ) );
             $attrs[$correctkey]['name']= wc_attribute_label($key);
             $attrs[$correctkey]['visible'] =  $product_attributes[$correctkey]->get_visible();
             for($i=0; count($name) > $i; $i++){
