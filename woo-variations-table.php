@@ -7,14 +7,14 @@ Author: Alaa Rihan
 Author URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Text Domain: woo-variations-table
 Domain Path: /languages/
-Version: 1.3
+Version: 1.3.2
 */
 
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
 
-define("WOO_VARIATIONS_TABLE_VERSION", '1.3');
+define("WOO_VARIATIONS_TABLE_VERSION", '1.3.2');
 
 // Check if WooCommerce is enabled
 add_action('plugins_loaded', 'check_woocommerce_enabled', 1);
@@ -181,8 +181,8 @@ function variations_table_get_variation_data_from_variation_id( $variation_id ) 
 // Update database
 add_action('admin_init', 'variations_table_database_update');
 function variations_table_database_update(){
-  $plugin_db_version = get_option('woo_variations_table_db_version', 1.1);
-  if ($plugin_db_version < 1.2){
+  $plugin_db_version = get_option('woo_variations_table_db_version', '1.1');
+  if (in_array($plugin_db_version, array('1.1', '1.0', '0.9.0', '0.8.1'))){
     $activeColumns = get_option('woo_variations_table_columns');
     if(isset($activeColumns['weight'])){
       $activeColumns['weight_html'] = $activeColumns['weight'];
@@ -190,6 +190,8 @@ function variations_table_database_update(){
       update_option('woo_variations_table_columns', $activeColumns);
     }
     update_option('woo_variations_table_show_attributes', '');
+  }
+  if($plugin_db_version != WOO_VARIATIONS_TABLE_VERSION){
     update_option('woo_variations_table_db_version', WOO_VARIATIONS_TABLE_VERSION);
   }
 }
