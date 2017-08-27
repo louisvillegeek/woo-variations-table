@@ -7,14 +7,14 @@ Author: Alaa Rihan
 Author URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Text Domain: woo-variations-table
 Domain Path: /languages/
-Version: 1.3.2
+Version: 1.3.3
 */
 
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
 
-define("WOO_VARIATIONS_TABLE_VERSION", '1.3.2');
+define("WOO_VARIATIONS_TABLE_VERSION", '1.3.3');
 
 // Check if WooCommerce is enabled
 add_action('plugins_loaded', 'check_woocommerce_enabled', 1);
@@ -269,11 +269,11 @@ function variations_table_print_table(){
                     <th class="stock" v-if="activeColumns['stock'] == 'on'" 
                       @click="sortBy('stock')"
                       :class="[{ active: sortKey == 'stock' }, 'stock']">
-                      <?php echo __("Stock", 'variations-table'); ?>
+                      <?php echo __("Stock", 'woo-variations-table'); ?>
                       <span class="arrow" :class="sortOrders['stock'] > 0 ? 'asc' : 'dsc'">
                       </span>
                     </th>
-                    <th class="quantity"><?php echo __("Quantity", 'variations-table'); ?></th>
+                    <th class="quantity"><?php echo __("Quantity", 'woo-variations-table'); ?></th>
                     <th class="add-to-cart"></th>
                   </tr>
                 </thead>
@@ -290,14 +290,14 @@ function variations_table_print_table(){
                     <td class="stock" v-if="activeColumns['stock'] == 'on'" data-title="Stock">
                       <span class="item">
                         <template v-if="entry['is_in_stock']">
-                          <span><?php echo __("In Stock", 'variations-table'); ?></span>
+                          <span><?php echo __("In Stock", 'woo-variations-table'); ?></span>
                           <span v-if="entry['stock']">({{entry['stock']}})</span>
                         </template>
-                        <span v-else><?php echo __("Out of Stock", 'variations-table'); ?></span>
+                        <span v-else><?php echo __("Out of Stock", 'woo-variations-table'); ?></span>
                       </span>
                     </td>
                     <td class="quantity"><input :ref="'quantity-'+entry.variation_id" value="1" type="number" step="1" min="1" name="quantity" data-title="Qty" title="Qty" class="input-text qty text" size="4" pattern="[0-9]*" inputmode="numeric"></td>
-                    <td class="add-to-cart"><button :ref="'variation-'+entry.variation_id" @click="addToCart(entry)" type="submit" class="single_add_to_cart_button button alt" :class="{added: entry.added}">Add to cart</button></td>
+                    <td class="add-to-cart"><button :ref="'variation-'+entry.variation_id" @click="addToCart(entry)" type="submit" class="single_add_to_cart_button button alt" :class="{added: entry.added}"><?php echo __("Add to Cart", 'woo-variations-table'); ?></button></td>
                   </tr>
                 </tbody>
               </table>
