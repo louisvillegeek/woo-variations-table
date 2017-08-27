@@ -202,13 +202,17 @@ function variations_table_print_table(){
         $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->get_id() ), 'shop_single')[0];
         $variations = $product->get_available_variations();
         
-        // Image link and Stock no longer exist in WooCommerce 3.x so do this work around
+        // Image link and Stock are no longer exist in WooCommerce 3.x so do this work around
         foreach ( $variations as $key => $variation ) {
           if(!isset($variation['image_link']) && isset($variation['image'])){
             $variations[$key]['image_link'] = $variation['image']['src'];
           }
           if(!isset($variation['stock']) && isset($variation['stock_quantity'])){
             $variations[$key]['stock'] = $variation['stock_quantity'];
+          }
+          // price_html is empty if all variations have the same price in WooCommerce 3.x so do this work around
+          if(empty($variation['price_html'])){
+            $variations[$key]['price_html'] = $product->get_price_html();
           }
         }
         
