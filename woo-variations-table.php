@@ -7,14 +7,14 @@ Author: Alaa Rihan
 Author URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Text Domain: woo-variations-table
 Domain Path: /languages/
-Version: 1.3.3
+Version: 1.3.4
 */
 
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
 
-define("WOO_VARIATIONS_TABLE_VERSION", '1.3.3');
+define("WOO_VARIATIONS_TABLE_VERSION", '1.3.4');
 
 // Check if WooCommerce is enabled
 add_action('plugins_loaded', 'check_woocommerce_enabled', 1);
@@ -122,7 +122,7 @@ function woo_variations_table_available_options_btn(){
   		return;
   ?>
   <div class="available-options-btn">
-    <button scrollto="#variations-table" type="button" class="single_add_to_cart_button button alt"><?php echo __('Available options', 'bravocontrols'); ?></button>
+    <button scrollto="#variations-table" type="button" class="single_add_to_cart_button button alt"><?php echo apply_filters( 'woo_variations_table_available_options_btn_text', __('Available options', 'woo-variations-table') ); ?></button>
   </div>
   <?php
 }
@@ -204,15 +204,11 @@ function variations_table_print_table(){
         $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->get_id() ), 'shop_single')[0];
         $variations = $product->get_available_variations();
         
-        // Image link and Stock are no longer exist in WooCommerce 3.x so do this work around
+        // Image link is no longer exist in WooCommerce 3.x so do this work around
         foreach ( $variations as $key => $variation ) {
           if(!isset($variation['image_link']) && isset($variation['image'])){
             $variations[$key]['image_link'] = $variation['image']['src'];
           }
-          if(!isset($variation['stock']) && isset($variation['stock_quantity'])){
-            $variations[$key]['stock'] = $variation['stock_quantity'];
-          }
-          
           // price_html is empty if all variations have the same price in WooCommerce 3.x so do this work around
           if(empty($variation['price_html'])){
             $variations[$key]['price_html'] = $product->get_price_html();
@@ -290,10 +286,10 @@ function variations_table_print_table(){
                     <td class="stock" v-if="activeColumns['stock'] == 'on'" data-title="Stock">
                       <span class="item">
                         <template v-if="entry['is_in_stock']">
-                          <span><?php echo __("In Stock", 'woo-variations-table'); ?></span>
-                          <span v-if="entry['stock']">({{entry['stock']}})</span>
+                          <span class='in-stock' v-if="entry['availability_html']" v-html="entry['availability_html']"></span>
+                          <?php do_action('woo_variations_table_after_stock', $product->get_id());  ?>
                         </template>
-                        <span v-else><?php echo __("Out of Stock", 'woo-variations-table'); ?></span>
+                        <span v-else class="out-of-stock"><?php echo __("Out of Stock", 'woo-variations-table'); ?></span>
                       </span>
                     </td>
                     <td class="quantity"><input :ref="'quantity-'+entry.variation_id" value="1" type="number" step="1" min="1" name="quantity" data-title="Qty" title="Qty" class="input-text qty text" size="4" pattern="[0-9]*" inputmode="numeric"></td>
