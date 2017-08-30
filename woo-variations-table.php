@@ -135,7 +135,7 @@ function variations_table_scripts() {
 		wp_enqueue_script( 'woo-variations-table', plugins_url( 'js/woo-variations-table.js', __FILE__), 'vuejs', WOO_VARIATIONS_TABLE_VERSION, false );
 		wp_enqueue_script( 'woo-variations-table-scripts', plugins_url( 'js/woo-variations-table-scripts.js', __FILE__), array( 'jquery' ), WOO_VARIATIONS_TABLE_VERSION , true);
 		wp_localize_script( 'woo-variations-table', 'localData', array(
-			'ajaxURL' => admin_url( 'admin-ajax.php' ),
+			'ajaxURL' => admin_url( 'admin-ajax.php?add_variation_to_cart=1' ),
 		) );
 		wp_enqueue_style( 'woo-variations-table-style', plugins_url( 'css/woo-variations-table.css', __FILE__ ), array(), WOO_VARIATIONS_TABLE_VERSION);
 	}
@@ -281,7 +281,7 @@ function variations_table_print_table(){
                       <span class="item" v-if="column.type == 'html'" v-html="entry[column.key]"></span>
                     </td>
                     <template v-if="showAttributes" v-for="(attr, key, index) in entry.attributes">
-                    <td v-if="attributes[key.substr(10)].visible"" :data-title="attributes[key.substr(10)].name">{{ attr }}</td>
+                    <td v-if="attributes[key.substr(10)].visible" :data-title="attributes[key.substr(10)].name">{{ showAttributeNameFromSlug(attr, attributes[key.substr(10)].options) }}</td>
                     </template>
                     <td class="stock" v-if="activeColumns['stock'] == 'on'" data-title="Stock">
                       <span class="item">
