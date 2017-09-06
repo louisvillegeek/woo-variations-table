@@ -7,14 +7,14 @@ Author: Alaa Rihan
 Author URI: https://lb.linkedin.com/in/alaa-rihan-6971b686
 Text Domain: woo-variations-table
 Domain Path: /languages/
-Version: 1.3.4
+Version: 1.3.5
 */
 
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
 
-define("WOO_VARIATIONS_TABLE_VERSION", '1.3.4');
+define("WOO_VARIATIONS_TABLE_VERSION", '1.3.5');
 
 // Check if WooCommerce is enabled
 add_action('plugins_loaded', 'check_woocommerce_enabled', 1);
@@ -201,7 +201,8 @@ add_filter('woocommerce_after_single_product_summary','variations_table_print_ta
 function variations_table_print_table(){
     global $product;
     if( $product->is_type( 'variable' ) ){
-        $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->get_id() ), 'shop_single')[0];
+        $thumb_name = apply_filters( 'woo_variations_table_thumb_name', 'shop_single');
+        $productImageURL = wp_get_attachment_image_src(get_post_thumbnail_id( $product->get_id() ),  $thumb_name)[0];
         $variations = $product->get_available_variations();
         
         // Image link is no longer exist in WooCommerce 3.x so do this work around
