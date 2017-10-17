@@ -41,6 +41,9 @@ To show an attibute in the variations table go to plugin settings and enable "Sh
 
 == Changelog ==
 
+= 1.3.9 =
+* Make 'Any' translatable.
+
 = 1.3.8 =
 * CSS improvments to compatible with more themes like Storefront and other WooCommerce themes.
 * Fix a PHP bug to compatible with older PHP versions.
