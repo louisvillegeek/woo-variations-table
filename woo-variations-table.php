@@ -311,7 +311,7 @@ function variations_table_print_table(){
                     <div v-for="(attribute, key, index) in attributes" class="filter">
                         <label>{{ attribute.name }} </label>
                         <select v-model="activeFilters[index]" @change="setFilters()" class="form-control">
-                          <option value="">Any</option>
+                          <option value=""><?php echo __('Any', 'woo-variations-table'); ?></option>
                           <option v-for="option in attribute.options" :value="'attribute_'+key+':'+option.slug">{{ option.name }}</option>
                         </select>
                     </div>
