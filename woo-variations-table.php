@@ -228,7 +228,8 @@ function variations_table_print_table(){
             $attrs[$correctkey]['name']= wc_attribute_label($key);
             $attrs[$correctkey]['visible'] =  $product_attributes[$correctkey]->get_visible();
             for($i=0; count($name) > $i; $i++){
-                $term = get_term_by('slug', array_values($name)[$i], $key);
+                $terms = array_values($name);
+                $term = get_term_by('slug', $terms[$i], $key);
                 if($term){
                 $attrs[$key]['options'][]=array('name'=>$term->name, 'slug'=>array_values($name)[$i]);
                 }else{
