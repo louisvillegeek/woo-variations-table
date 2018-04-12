@@ -120,6 +120,7 @@ function woo_variations_table_available_options_btn(){
   global $product;
   	if(!$product->is_type('variable'))
   		return;
+
   ?>
   <div class="available-options-btn">
     <button scrollto="#variations-table" type="button" class="single_add_to_cart_button button alt"><?php echo apply_filters( 'woo_variations_table_available_options_btn_text', __('Available options', 'woo-variations-table') ); ?></button>
@@ -195,6 +196,101 @@ function variations_table_database_update(){
     update_option('woo_variations_table_db_version', WOO_VARIATIONS_TABLE_VERSION);
   }
 }
+
+add_action('admin_footer', 'display_import_button');
+function display_import_button(){
+    ?>
+    <script type="text/javascript">
+/*
+        function myAjax() {
+            $.ajax({
+                type: "POST",
+                url: 'your_url/ajax.php',
+                data:{action:'call_this'},
+                success:function(html) {
+                    alert(html);
+                }
+            });
+        }
+*/
+
+        let attributes = document.getElementById("product_attributes");
+        let toolbar = attributes.getElementsByClassName("toolbar");
+
+
+        let form = document.createElement("form");
+        form.type = "form";
+        form.method = "POST";
+        form.name = "csv_form";
+        form.action = "";
+        form.className = "form";
+       // form.onSubmit = "return false";
+        toolbar[0].appendChild(form);
+
+
+        let button = document.createElement("input");
+        button.type = "submit";
+        button.name = "submit_button";
+        button.className = "button import_csv";
+        button.innerHTML = "Import";
+       
+        button.style.marginLeft = "30px";
+       // button.onClick
+
+        let file = document.createElement("input");
+        file.type = "file";
+        file.className = "csv_file";
+        file.innerHTML = "Choose File";
+        file.style.marginLeft = "5px";
+        file.name = "csv_name";
+
+        let the_form = toolbar[0].getElementsByClassName("form");
+        the_form[0].appendChild(button);
+        the_form[0].appendChild(file);
+
+
+
+    </script>
+    <?php
+    if($_POST['submit_button']){
+        var_dump($_FILES['csv_name']['tmp']);
+        import_csv_file($_FILES['csv_name']['tmp_name']);
+
+    }
+}
+
+//display_import_button();
+
+//Import CSV
+add_action('import_csv','import_csv_file');
+function import_csv_file($csvfile){
+
+    $csvFile = file($csvfile, FILE_IGNORE_NEW_LINES);
+    $data = [];
+    var_dump($csvFile);
+    foreach ($csvFile as $line) {
+        $data[] = str_getcsv($line);
+        $string = rtrim($line);
+        //echo $string;
+        //echo '============================================================================';
+    }
+    foreach ($data as $line) {
+        foreach	($line as $val){
+            echo $val;
+
+        }
+    }
+
+    /*
+    $data = ($_GET['csv_form']);
+    ?>
+    <script type="text/javascript">
+        console.log(<?php $data ?>);
+    </script>
+    <?php
+    */
+}
+
 
 // Print variations table after product summary
 add_filter('woocommerce_after_single_product_summary','variations_table_print_table',9);
