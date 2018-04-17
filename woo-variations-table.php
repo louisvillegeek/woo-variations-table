@@ -201,18 +201,6 @@ add_action('admin_footer', 'display_import_button');
 function display_import_button(){
     ?>
     <script type="text/javascript">
-/*
-        function myAjax() {
-            $.ajax({
-                type: "POST",
-                url: 'your_url/ajax.php',
-                data:{action:'call_this'},
-                success:function(html) {
-                    alert(html);
-                }
-            });
-        }
-*/
 
         let attributes = document.getElementById("product_attributes");
         let toolbar = attributes.getElementsByClassName("toolbar");
@@ -224,7 +212,8 @@ function display_import_button(){
         form.name = "csv_form";
         form.action = "";
         form.className = "form";
-       // form.onSubmit = "return false";
+        form.style.marginTop = "10px";
+        form.enctype = "multipart/form-data";
         toolbar[0].appendChild(form);
 
 
@@ -232,65 +221,221 @@ function display_import_button(){
         button.type = "submit";
         button.name = "submit_button";
         button.className = "button import_csv";
-        button.innerHTML = "Import";
-       
+        button.value = "Import";
         button.style.marginLeft = "30px";
-       // button.onClick
 
         let file = document.createElement("input");
         file.type = "file";
         file.className = "csv_file";
+        file.id = 'csv_name';
         file.innerHTML = "Choose File";
         file.style.marginLeft = "5px";
         file.name = "csv_name";
 
         let the_form = toolbar[0].getElementsByClassName("form");
+        toolbar[0].appendChild(form);
         the_form[0].appendChild(button);
         the_form[0].appendChild(file);
 
 
-
     </script>
-    <?php
-    if($_POST['submit_button']){
-        var_dump($_FILES['csv_name']['tmp']);
-        import_csv_file($_FILES['csv_name']['tmp_name']);
 
+    <?php
+    if($_POST['submit_button']) {
+        $csv = $_FILES["csv_name"]["tmp_name"];
+
+        $file = fopen($csv,"r");
+        $keys = fgetcsv($file);
+
+        $values = [];
+
+        while(! feof($file))
+        {
+            $values[] = fgetcsv($file);
+        }
+
+        $cols = [];
+        for ($i = 0; $i < sizeof($values);$i++){
+            $row = $values[$i];
+            for ($j = 0; $j < sizeof($row);$j++){
+                $cols[$j][] = $row[$j];
+            }
+        }
+
+        $table = [];
+        $i = 0;
+        foreach ($keys as $val){
+            //$keyval = array($val => $cols[$i]);
+            $table[$val] = $cols[$i];
+            $i++;
+        }
+
+
+
+       // var_dump($table);
+
+
+        //update the database
+        $id = get_the_ID();
+        wcproduct_set_attributes($id,$table);
+
+
+
+
+        header("Refresh:0");
     }
 }
+
+
+
+//Currently does not like adding values that are arrays for the attributes
+
+// @param int $post_id - The id of the post that you are setting the attributes for
+// @param array[] $attributes - This needs to be an array containing ALL your attributes so it can insert them in one go
+function wcproduct_set_attributes($post_id, $attributes) {
+    $i = 0;
+    // Loop through the attributes array
+    foreach ($attributes as $name => $value) {
+
+        //wp_set_object_terms($post_id, $value[1], $name, true);
+        $str = implode(' | ', $value);
+        //var_dump($str);
+        //wp_set_object_terms($post_id, $value[0], $name, true);
+        $product_attributes[$i] = array(
+            'name' => htmlspecialchars(stripslashes($name)), // set attribute name
+            'value' => htmlspecialchars(stripslashes($str)), // set attribute value
+            //'value' => "test1 | test2 | test3", // set attribute value
+            'position' => 0,
+            'is_visible' => 1,
+            'is_variation' => 1,
+            'is_taxonomy' => 0
+        );
+
+        var_dump($product_attributes[$i]['value']);
+        $i++;
+
+
+
+    }
+    // Now update the post with its new attributes
+   // add_post_meta($post_id, '_product_attributes', $product_attributes, false);
+    update_post_meta($post_id, '_product_attributes', $product_attributes);
+    create_product_variation($post_id, $product_attributes);
+}
+
+
+
+/**
+ * Create a product variation for a defined variable product ID.
+ *
+ * @since 3.0.0
+ * @param int   $product_id | Post ID of the product parent variable product.
+ * @param array $variation_data | The data to insert in the product.
+ */
+function create_product_variation( $product_id, $variation_data ){
+    // Get the Variable product object (parent)
+    $product = wc_get_product($product_id);
+
+    $variation_post = array(
+        'post_title'  => $product->get_title(),
+        'post_name'   => 'product-'.$product_id.'-variation',
+        'post_status' => 'publish',
+        'post_parent' => $product_id,
+        'post_type'   => 'product_variation',
+        'guid'        => $product->get_permalink()
+    );
+
+    // Creating the product variation
+    $variation_id = wp_insert_post( $variation_post );
+
+    // Get an instance of the WC_Product_Variation object
+    $variation = new WC_Product_Variation( $variation_id );
+
+    // Iterating through the variations attributes
+    foreach ($variation_data['attributes'] as $attribute => $term_name )
+    {
+        $taxonomy = 'pa_'.$attribute; // The attribute taxonomy
+
+        // Check if the Term name exist and if not we create it.
+        if( ! term_exists( $term_name, $taxonomy ) )
+            wp_insert_term( $term_name, $taxonomy ); // Create the term
+
+        $term_slug = get_term_by('name', $term_name, $taxonomy )->slug; // Get the term slug
+
+        // Get the post Terms names from the parent variable product.
+        $post_term_names =  wp_get_post_terms( $product_id, $taxonomy, array('fields' => 'names') );
+
+        // Check if the post term exist and if not we set it in the parent variable product.
+        if( ! in_array( $term_name, $post_term_names ) )
+            wp_set_post_terms( $product_id, $term_name, $taxonomy, true );
+
+        // Set/save the attribute data in the product variation
+        update_post_meta( $variation_id, 'attribute_'.$taxonomy, $term_slug );
+    }
+
+    ## Set/save all other data
+
+    // SKU
+    if( ! empty( $variation_data['sku'] ) )
+        $variation->set_sku( $variation_data['sku'] );
+
+    // Prices
+    if( empty( $variation_data['sale_price'] ) ){
+        $variation->set_price( $variation_data['regular_price'] );
+    } else {
+        $variation->set_price( $variation_data['sale_price'] );
+        $variation->set_sale_price( $variation_data['sale_price'] );
+    }
+    $variation->set_regular_price( $variation_data['regular_price'] );
+
+    // Stock
+    if( ! empty($variation_data['stock_qty']) ){
+        $variation->set_stock_quantity( $variation_data['stock_qty'] );
+        $variation->set_manage_stock(true);
+        $variation->set_stock_status('');
+    } else {
+        $variation->set_manage_stock(false);
+    }
+
+    $variation->set_weight(''); // weight (reseting)
+
+    $variation->save(); // Save the data
+}
+
+
+
+
+
 
 //display_import_button();
+/*
+//Save CSV
+add_action( 'save_post', 'save_csv_file' );
+function save_csv_file($post_id){
+    if($_POST['submit_button']){
+        print_r($_FILES);
+        // var_dump($_FILES);
+        // $test = $_POST['submit_button'];
+        //$csv = $_FILES["csv_name"]["tmp_name"];
+        $csv = '/test/' . $_FILES["csv_name"]["tmp_name"];
+        move_uploaded_file($_FILES["csv_name"]["tmp_name"], $csv);
+        ?>
+        <script type="text/javascript">
+            console.log("test?");
+        </script>
+        <?php
+        echo $csv;
+        // remove_action( 'save_post', 'save_csv_file', 13, 2 );
 
-//Import CSV
-add_action('import_csv','import_csv_file');
-function import_csv_file($csvfile){
+        // update the post, which calls save_post again
+        //  wp_update_post( array( 'ID' => $post_id, 'post_status' => 'private' ) );
 
-    $csvFile = file($csvfile, FILE_IGNORE_NEW_LINES);
-    $data = [];
-    var_dump($csvFile);
-    foreach ($csvFile as $line) {
-        $data[] = str_getcsv($line);
-        $string = rtrim($line);
-        //echo $string;
-        //echo '============================================================================';
+        // re-hook this function
+        // add_action( 'save_post', 'save_csv_file', 13, 2 );
+
     }
-    foreach ($data as $line) {
-        foreach	($line as $val){
-            echo $val;
-
-        }
-    }
-
-    /*
-    $data = ($_GET['csv_form']);
-    ?>
-    <script type="text/javascript">
-        console.log(<?php $data ?>);
-    </script>
-    <?php
-    */
 }
-
+*/
 
 // Print variations table after product summary
 add_filter('woocommerce_after_single_product_summary','variations_table_print_table',9);
