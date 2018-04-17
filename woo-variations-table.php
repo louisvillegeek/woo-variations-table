@@ -271,18 +271,36 @@ function display_import_button(){
         }
 
 
-
-       // var_dump($table);
-
-
         //update the database
         $id = get_the_ID();
         wcproduct_set_attributes($id,$table);
 
 
+        //get old variations
+        $product_temp = wc_get_product($id);
+        $variation_ids = $product_temp->get_children();
+
+
+        //create new variation tables
+        $variation_data =  [];
+        for($i = 0; $i < sizeof($table['Model'])-1; $i++){
+            for($j = 0; $j < sizeof($keys); $j++){
+                $variation_data[$keys[$j]] = $table[$keys[$j]][$i];
+            }
+            create_product_variation($id, $variation_data);
+            $variation_data =  [];
+        }
+
+        //delete old variations
+        foreach ($variation_ids as $id){
+            wp_delete_post($id);
+        }
 
 
         header("Refresh:0");
+      //  $wc_product = wc_get_product($id);
+       // $wc_product->save();
+      //  $wc_product->apply_changes();
     }
 }
 
@@ -300,7 +318,7 @@ function wcproduct_set_attributes($post_id, $attributes) {
         //wp_set_object_terms($post_id, $value[1], $name, true);
         $str = implode(' | ', $value);
         //var_dump($str);
-        //wp_set_object_terms($post_id, $value[0], $name, true);
+        wp_set_object_terms($post_id, $str, $name, true);
         $product_attributes[$i] = array(
             'name' => htmlspecialchars(stripslashes($name)), // set attribute name
             'value' => htmlspecialchars(stripslashes($str)), // set attribute value
@@ -310,17 +328,14 @@ function wcproduct_set_attributes($post_id, $attributes) {
             'is_variation' => 1,
             'is_taxonomy' => 0
         );
-
-        var_dump($product_attributes[$i]['value']);
+        if($product_attributes[$i]['name'] == 'List Price') $product_attributes[$i]['is_variation'] = 0;
         $i++;
 
 
 
     }
     // Now update the post with its new attributes
-   // add_post_meta($post_id, '_product_attributes', $product_attributes, false);
     update_post_meta($post_id, '_product_attributes', $product_attributes);
-    create_product_variation($post_id, $product_attributes);
 }
 
 
@@ -335,6 +350,9 @@ function wcproduct_set_attributes($post_id, $attributes) {
 function create_product_variation( $product_id, $variation_data ){
     // Get the Variable product object (parent)
     $product = wc_get_product($product_id);
+
+
+
 
     $variation_post = array(
         'post_title'  => $product->get_title(),
@@ -351,9 +369,12 @@ function create_product_variation( $product_id, $variation_data ){
     // Get an instance of the WC_Product_Variation object
     $variation = new WC_Product_Variation( $variation_id );
 
+
     // Iterating through the variations attributes
-    foreach ($variation_data['attributes'] as $attribute => $term_name )
+    //foreach ($variation_data['attributes'] as $attribute => $term_name )
+    foreach ($variation_data as $attribute => $term_name )
     {
+       // var_dump($term_name);
         $taxonomy = 'pa_'.$attribute; // The attribute taxonomy
 
         // Check if the Term name exist and if not we create it.
@@ -366,76 +387,32 @@ function create_product_variation( $product_id, $variation_data ){
         $post_term_names =  wp_get_post_terms( $product_id, $taxonomy, array('fields' => 'names') );
 
         // Check if the post term exist and if not we set it in the parent variable product.
-        if( ! in_array( $term_name, $post_term_names ) )
-            wp_set_post_terms( $product_id, $term_name, $taxonomy, true );
+        //if( ! in_array( $term_name, $post_term_names ) )
+        wp_set_post_terms( $product_id, $term_name, $taxonomy, false );
 
         // Set/save the attribute data in the product variation
-        update_post_meta( $variation_id, 'attribute_'.$taxonomy, $term_slug );
+        //update_post_meta( $variation_id, 'attribute_'.strtolower($taxonomy), $term_name );
+        $string = strtolower(str_replace(' ','-',str_replace(['(',')'],'',$attribute)));
+        //change this to be more dynamic and include more than two whitespace
+        update_post_meta( $variation_id, 'attribute_'.$string, str_replace('  ',' ', $term_name));
     }
 
-    ## Set/save all other data
 
-    // SKU
-    if( ! empty( $variation_data['sku'] ) )
-        $variation->set_sku( $variation_data['sku'] );
 
-    // Prices
-    if( empty( $variation_data['sale_price'] ) ){
-        $variation->set_price( $variation_data['regular_price'] );
-    } else {
-        $variation->set_price( $variation_data['sale_price'] );
-        $variation->set_sale_price( $variation_data['sale_price'] );
-    }
-    $variation->set_regular_price( $variation_data['regular_price'] );
 
-    // Stock
-    if( ! empty($variation_data['stock_qty']) ){
-        $variation->set_stock_quantity( $variation_data['stock_qty'] );
-        $variation->set_manage_stock(true);
-        $variation->set_stock_status('');
-    } else {
-        $variation->set_manage_stock(false);
-    }
+   // $variation->set_sku( 'test' );
+
 
     $variation->set_weight(''); // weight (reseting)
+    $variation->save();
 
-    $variation->save(); // Save the data
+
+
+
+
 }
 
 
-
-
-
-
-//display_import_button();
-/*
-//Save CSV
-add_action( 'save_post', 'save_csv_file' );
-function save_csv_file($post_id){
-    if($_POST['submit_button']){
-        print_r($_FILES);
-        // var_dump($_FILES);
-        // $test = $_POST['submit_button'];
-        //$csv = $_FILES["csv_name"]["tmp_name"];
-        $csv = '/test/' . $_FILES["csv_name"]["tmp_name"];
-        move_uploaded_file($_FILES["csv_name"]["tmp_name"], $csv);
-        ?>
-        <script type="text/javascript">
-            console.log("test?");
-        </script>
-        <?php
-        echo $csv;
-        // remove_action( 'save_post', 'save_csv_file', 13, 2 );
-
-        // update the post, which calls save_post again
-        //  wp_update_post( array( 'ID' => $post_id, 'post_status' => 'private' ) );
-
-        // re-hook this function
-        // add_action( 'save_post', 'save_csv_file', 13, 2 );
-
-    }
-}
-*/
 
 // Print variations table after product summary
 add_filter('woocommerce_after_single_product_summary','variations_table_print_table',9);
@@ -448,7 +425,7 @@ function variations_table_print_table(){
           $productImageURL = $productImageURL[0];
         }
         $variations = $product->get_available_variations();
-        
+
         // Image link is no longer exist in WooCommerce 3.x so do this work around
         foreach ( $variations as $key => $variation ) {
           if(!isset($variation['image_link']) && isset($variation['image'])){
