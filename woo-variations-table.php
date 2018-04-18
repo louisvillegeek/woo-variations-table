@@ -196,7 +196,7 @@ function variations_table_database_update(){
     update_option('woo_variations_table_db_version', WOO_VARIATIONS_TABLE_VERSION);
   }
 }
-
+//code review start
 add_action('admin_footer', 'display_import_button');
 function display_import_button(){
     ?>
@@ -243,6 +243,10 @@ function display_import_button(){
     <?php
     if($_POST['submit_button']) {
         $csv = $_FILES["csv_name"]["tmp_name"];
+
+        //Didnt work for some reason
+       // if (($_FILES[$csv]["type"] != "text/csv")) return;
+
 
         $file = fopen($csv,"r");
         $keys = fgetcsv($file);
@@ -298,9 +302,7 @@ function display_import_button(){
 
 
         header("Refresh:0");
-      //  $wc_product = wc_get_product($id);
-       // $wc_product->save();
-      //  $wc_product->apply_changes();
+
     }
 }
 
@@ -394,14 +396,14 @@ function create_product_variation( $product_id, $variation_data ){
         //update_post_meta( $variation_id, 'attribute_'.strtolower($taxonomy), $term_name );
         $string = strtolower(str_replace(' ','-',str_replace(['(',')'],'',$attribute)));
         //change this to be more dynamic and include more than two whitespace
-        update_post_meta( $variation_id, 'attribute_'.$string, str_replace('  ',' ', $term_name));
+        update_post_meta( $variation_id, 'attribute_'.$string, $term_name);
     }
 
 
 
 
    // $variation->set_sku( 'test' );
-
+  //  $variation->set_price();
 
     $variation->set_weight(''); // weight (reseting)
     $variation->save();
@@ -411,7 +413,7 @@ function create_product_variation( $product_id, $variation_data ){
 
 
 }
-
+//code review end
 
 
 // Print variations table after product summary
