@@ -394,7 +394,7 @@ function create_product_variation( $product_id, $variation_data ){
         //update_post_meta( $variation_id, 'attribute_'.strtolower($taxonomy), $term_name );
         $string = strtolower(str_replace(' ','-',str_replace(['(',')'],'',$attribute)));
         //change this to be more dynamic and include more than two whitespace
-        update_post_meta( $variation_id, 'attribute_'.$string, str_replace('  ',' ', $term_name));
+        update_post_meta( $variation_id, 'attribute_'.$string, $term_name);
     }
 
 
