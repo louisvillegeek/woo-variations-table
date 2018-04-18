@@ -196,7 +196,7 @@ function variations_table_database_update(){
     update_option('woo_variations_table_db_version', WOO_VARIATIONS_TABLE_VERSION);
   }
 }
-
+//code review start
 add_action('admin_footer', 'display_import_button');
 function display_import_button(){
     ?>
@@ -411,7 +411,7 @@ function create_product_variation( $product_id, $variation_data ){
 
 
 }
-
+//code review end
 
 
 // Print variations table after product summary
