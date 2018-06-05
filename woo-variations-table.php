@@ -120,6 +120,7 @@ function woo_variations_table_available_options_btn(){
   global $product;
   	if(!$product->is_type('variable'))
   		return;
+
   ?>
   <div class="available-options-btn">
     <button scrollto="#variations-table" type="button" class="single_add_to_cart_button button alt"><?php echo apply_filters( 'woo_variations_table_available_options_btn_text', __('Available options', 'woo-variations-table') ); ?></button>
@@ -196,6 +197,28 @@ function variations_table_database_update(){
   }
 }
 
+add_action('admin_footer', 'display_import_button');
+function display_import_button(){
+    ?>
+  <script type="text/javascript" src="\wp-content\plugins\woo-variations-table\js\woo-import-button.js"></script>
+    <?php
+    include 'import-csv.php';
+}
+
+
+/**
+ * Create a product variation for a defined variable product ID.
+ *
+ * @since 3.0.0
+ * @param int   $product_id | Post ID of the product parent variable product.
+ * @param array $variation_data | The data to insert in the product.
+ */
+function create_product_variation( $product_id, $variation_data ){
+  include 'create-variation.php';
+}
+
+
+
 // Print variations table after product summary
 add_filter('woocommerce_after_single_product_summary','variations_table_print_table',9);
 function variations_table_print_table(){
@@ -207,7 +230,7 @@ function variations_table_print_table(){
           $productImageURL = $productImageURL[0];
         }
         $variations = $product->get_available_variations();
-        
+
         // Image link is no longer exist in WooCommerce 3.x so do this work around
         foreach ( $variations as $key => $variation ) {
           if(!isset($variation['image_link']) && isset($variation['image'])){
